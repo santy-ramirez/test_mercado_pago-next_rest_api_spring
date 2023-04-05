@@ -1,1 +1,1 @@
-This is a starter template for [Learn Next.js](https://nextjs.org/learn).# test_mercado_pago-next_rest_api_spring
+# testing mercado pago with next js and rest api made with spring framework
