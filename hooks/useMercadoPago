@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useScript from "./useScript";
 import { formConfig } from "../configForm/formConfig.js";
+import axios from "axios";
 
 export default function useMercadoPago() {
   const [resultPayment, setResultPayment] = useState(undefined);
@@ -12,7 +13,7 @@ export default function useMercadoPago() {
 
   useEffect(() => {
     if (MercadoPago) {
-      const mp = new MercadoPago("TEST-26c8fd66-cc67-4488-b6ce-a2fd6beac140");
+      const mp = new MercadoPago(process.env.TOKEN_PUBLIC);
       const cardForm = mp.cardForm({
         amount: "100.5",
         autoMount: true,
@@ -27,8 +28,8 @@ export default function useMercadoPago() {
             event.preventDefault();
 
             const {
-              paymentMethodId: payment_method_id,
-              issuerId: issuer_id,
+              paymentMethodId,
+              issuerId,
               cardholderEmail: email,
               amount,
               token,
@@ -37,22 +38,47 @@ export default function useMercadoPago() {
               identificationType,
             } = cardForm.getCardFormData();
 
-            fetch("http://localhost:8080/process-payment", {
+            console.log(token);
+
+            /*   axios.post("http://localhost:8080/process-payment", {
+              token,
+              issuer_id,
+              payment_method_id,
+              transaction_amount: 1000,
+              installments: Number(installments),
+              description: "Descripción del producto",
+              payer: {
+                email,
+                identification: {
+                  type: identificationType,
+                  number: identificationNumber,
+                },
+              },
+            });
+           .then(
+                (data) => console.log(data)
+                /* (data) => setResultPayment(data) 
+              )
+              .catch((err) => {
+                console.log(err);
+                /*  setResultPayment(err); 
+              }); */
+
+            fetch("http://localhost:8080/process_payment", {
               // entry point backend
               method: "POST",
               headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Request-Method":
-                  "GET, POST, DELETE, PUT, OPTIONS",
                 "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Request-Method": "*",
               },
               body: JSON.stringify({
                 token,
-                issuer_id,
-                payment_method_id,
-                transaction_amount: 1000,
+                issuerId,
+                paymentMethodId,
+                transactionAmount: 1000,
                 installments: Number(installments),
-                description: "Descripción del producto",
+                productDescription: "Descripción del producto",
                 payer: {
                   email,
                   identification: {
@@ -68,6 +94,7 @@ export default function useMercadoPago() {
                 setResultPayment(err);
               });
           },
+
           onFetching: (resource) => {
             // Animate progress bar
             const progressBar = document.querySelector(".progress-bar");
